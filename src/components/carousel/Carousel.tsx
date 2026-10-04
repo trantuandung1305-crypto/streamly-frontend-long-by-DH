@@ -22,19 +22,19 @@ export function Carousel({ children, label }: CarouselProps) {
     update(); api.on('select', update); api.on('reInit', update); api.on('scroll', updateOrigins);
     return () => { api.off('select', update); api.off('reInit', update); api.off('scroll', updateOrigins); };
   }, [api]);
-  return <div className="carousel group/carousel relative" role="region" aria-roledescription="carousel" aria-label={label}
+  return <div className="carousel group/carousel relative" role="region" aria-roledescription="băng chuyền" aria-label={label}
     onKeyDown={(event) => {
       if (event.target instanceof HTMLInputElement) return;
       if (event.key === 'ArrowRight') { event.preventDefault(); api?.scrollNext(); }
       if (event.key === 'ArrowLeft') { event.preventDefault(); api?.scrollPrev(); }
     }}>
-    <div ref={ref} className="carousel-viewport scrollbar-hide" tabIndex={0} aria-label={`${label}: use left and right arrow keys`}>
+    <div ref={ref} className="carousel-viewport scrollbar-hide" tabIndex={0} aria-label={`${label}: dùng phím mũi tên trái và phải`}>
       <div className="flex touch-pan-y gap-3">
         {Children.map(children, (child) => <div className="carousel-slide min-w-0 shrink-0 grow-0">{child}</div>)}
       </div>
     </div>
-    {canPrev && <IconButton ariaLabel={`Previous ${label}`} className="carousel-arrow -left-3" variant="secondary" onClick={() => api?.scrollPrev()}><ChevronLeft /></IconButton>}
-    {canNext && <IconButton ariaLabel={`Next ${label}`} className="carousel-arrow -right-3" variant="secondary" onClick={() => api?.scrollNext()}><ChevronRight /></IconButton>}
+    {canPrev && <IconButton ariaLabel={`${label} trước`} className="carousel-arrow -left-3" variant="secondary" onClick={() => api?.scrollPrev()}><ChevronLeft /></IconButton>}
+    {canNext && <IconButton ariaLabel={`${label} tiếp theo`} className="carousel-arrow -right-3" variant="secondary" onClick={() => api?.scrollNext()}><ChevronRight /></IconButton>}
   </div>;
 }
 

@@ -1,5 +1,5 @@
 import type { MovieDetail, UpdateMovieRequest } from '@/types';
-import { mockMovies } from './mockMovies';
+import { mockMovies } from './data';
 
 const OVERRIDES_KEY = 'streamly_mock_movies_overrides';
 const DELETIONS_KEY = 'streamly_mock_movies_deletions';
@@ -31,7 +31,7 @@ export function getMockMovies(): MovieDetail[] {
 
 export function updateMockMovie(id: number, request: UpdateMovieRequest): MovieDetail {
   const movie = getMockMovies().find((item) => item.id === id);
-  if (!movie) throw { status: 404, message: 'Movie not found.' };
+  if (!movie) throw { status: 404, message: 'Không tìm thấy phim.' };
   const overrides = readOverrides();
   overrides[String(id)] = { ...request, updatedAt: new Date().toISOString() };
   localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
@@ -39,7 +39,7 @@ export function updateMockMovie(id: number, request: UpdateMovieRequest): MovieD
 }
 
 export function deleteMockMovie(id: number): void {
-  if (!getMockMovies().some((movie) => movie.id === id)) throw { status: 404, message: 'Movie not found.' };
+  if (!getMockMovies().some((movie) => movie.id === id)) throw { status: 404, message: 'Không tìm thấy phim.' };
   const deleted = new Set(readDeletions());
   deleted.add(id);
   localStorage.setItem(DELETIONS_KEY, JSON.stringify([...deleted]));

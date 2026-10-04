@@ -1,0 +1,37 @@
+import type { Movie, MovieDetail } from '@/types';
+import { normalizeApiError } from '@/lib/error';
+import { isValidMovieId } from '@/lib/movie';
+import { normalizeText } from '@/lib/text';
+import { getMockMovies } from './store';
+
+async function delay(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    throw normalizeApiError({ message: 'Không thể kết nối. Hãy kiểm tra đường truyền và thử lại.' });
+  }
+}
+
+export const mockMoviesApi = {
+  getMovies: async (): Promise<Movie[]> => {
+    await delay();
+    return getMockMovies();
+  },
+  getMovieById: async (id: number): Promise<Movie> => {
+    if (!isValidMovieId(id)) throw { status: 404, message: 'Không tìm thấy phim.' };
+    await delay();
+    const movie = getMockMovies().find((item) => item.id === id);
+    if (!movie) throw { status: 404, message: 'Không tìm thấy phim.' };
+    return movie;
+  },
+  searchMovies: async (q: string, limit: number): Promise<Movie[]> => {
+    await delay();
+    const query = normalizeText(q.trim());
+    return getMockMovies().filter((movie) => normalizeText(movie.title).includes(query)).slice(0, limit);
+  },
+  getSimilarMovies: async (id: number): Promise<MovieDetail[]> => {
+    await delay();
+    const movies = getMockMovies();
+    const genreIds = movies.find((movie) => movie.id === id)?.genres?.map((genre) => genre.id) ?? [];
+    return movies.filter((movie) => movie.id !== id && movie.genres?.some((genre) => genreIds.includes(genre.id))).slice(0, 6);
+  },
+};

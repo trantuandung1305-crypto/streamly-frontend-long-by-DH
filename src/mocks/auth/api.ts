@@ -1,5 +1,6 @@
 import type { AuthResponse, LoginCredentials, RegisterCredentials, User } from '@/types';
-import { applyMockProfileOverride } from '@/api/profile.api';
+import { applyMockProfileOverride } from '@/mocks/profile/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface MockAccount extends User {
   password: string;
@@ -14,8 +15,8 @@ export const mockAuthDemoCredentials = {
 } as const;
 
 const seededAccounts: MockAccount[] = [
-  { id: 1, email: mockAuthDemoCredentials.user.email, password: mockAuthDemoCredentials.user.password, displayName: 'Demo User', avatarUrl: null, role: 'User', createdAt: '2026-01-01T00:00:00Z' },
-  { id: 2, email: mockAuthDemoCredentials.admin.email, password: mockAuthDemoCredentials.admin.password, displayName: 'Demo Admin', avatarUrl: null, role: 'Admin', createdAt: '2026-01-01T00:00:00Z' },
+  { id: 1, email: mockAuthDemoCredentials.user.email, password: mockAuthDemoCredentials.user.password, displayName: 'Người dùng mẫu', avatarUrl: null, role: 'User', createdAt: '2026-01-01T00:00:00Z' },
+  { id: 2, email: mockAuthDemoCredentials.admin.email, password: mockAuthDemoCredentials.admin.password, displayName: 'Quản trị mẫu', avatarUrl: null, role: 'Admin', createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 function delay(): Promise<void> {
@@ -56,7 +57,7 @@ export async function mockLogin(credentials: LoginCredentials): Promise<AuthResp
   const email = credentials.email.trim().toLowerCase();
   const account = [...seededAccounts, ...readRegisteredAccounts()].find((item) => item.email.toLowerCase() === email);
   if (!account || account.password !== credentials.password) {
-    throw { status: 401, message: 'Incorrect email or password.' };
+    throw { status: 401, message: 'Email hoặc mật khẩu không đúng.' };
   }
   return authResponse(account);
 }
@@ -64,16 +65,16 @@ export async function mockLogin(credentials: LoginCredentials): Promise<AuthResp
 export async function mockRegister(credentials: RegisterCredentials): Promise<AuthResponse> {
   await delay();
   if (credentials.password.length < 8) {
-    throw { status: 400, message: 'Please check the form.', errors: { password: ['Password must be at least 8 characters.'] } };
+    throw { status: 400, message: 'Vui lòng kiểm tra thông tin.', errors: { password: ['Mật khẩu phải có ít nhất 8 ký tự.'] } };
   }
   const email = credentials.email.trim().toLowerCase();
   const displayName = credentials.displayName.trim();
   if (displayName.length < 2 || displayName.length > 50) {
-    throw { status: 400, message: 'Please check the form.', errors: { displayName: ['Display name must be 2 to 50 characters.'] } };
+    throw { status: 400, message: 'Vui lòng kiểm tra thông tin.', errors: { displayName: ['Tên hiển thị phải có từ 2 đến 50 ký tự.'] } };
   }
   const registered = readRegisteredAccounts();
   if ([...seededAccounts, ...registered].some((item) => item.email.toLowerCase() === email)) {
-    throw { status: 409, message: 'An account with this email already exists.' };
+    throw { status: 409, message: 'Email này đã được sử dụng.' };
   }
   const nextId = Math.max(2, ...registered.map((item) => item.id)) + 1;
   const account: MockAccount = {
@@ -87,4 +88,10 @@ export async function mockRegister(credentials: RegisterCredentials): Promise<Au
   };
   localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify([...registered, account]));
   return authResponse(account);
+}
+
+export function mockGetCurrentUser(): User {
+  const user = useAuthStore.getState().user;
+  if (!user) throw { status: 401, message: 'Phiên đăng nhập đã hết hạn' };
+  return user;
 }
